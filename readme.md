@@ -1,1 +1,1 @@
-primitive ai in python3
+my first ai using pytorch
