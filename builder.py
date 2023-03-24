@@ -43,7 +43,8 @@ model = Sequential([
         layers.Dropout(0.25),
         layers.Conv2D(128, (3, 3), activation="relu", kernel_regularizer=regularizers.l2(0.001) ),
         layers.Flatten(),
-        layers.Dense(64, activation="relu", kernel_regularizer=regularizers.l2(0.001)),
+        layers.Dense(1024, activation="relu", kernel_regularizer=regularizers.l2(0.001)),
+        layers.Dense(512, activation="relu", kernel_regularizer=regularizers.l2(0.001)),
         layers.Dropout(0.4),
         layers.Dense(10, activation="softmax")
 ])
