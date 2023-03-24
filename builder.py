@@ -5,26 +5,46 @@ from tensorflow.keras import layers
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.datasets import mnist
 from tensorflow.keras.utils import to_categorical
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
+from tensorflow.keras.callbacks import EarlyStopping
+from tensorflow.keras import regularizers
+
+# Data augmentation
+datagen = ImageDataGenerator(
+    rotation_range=15,
+    width_shift_range=0.2,
+    height_shift_range=0.2,
+    shear_range=0.2,
+    zoom_range=0.2,
+    fill_mode='nearest',
+)
 
 # Load the MNIST dataset
-(x_train, y_train), (x_test, y_test) = mnist.load_data()
+(train_images, train_labels), (test_images, test_labels) = mnist.load_data()
 
-# Normalize the input images to the range [0, 1]
-x_train, x_test = x_train / 255.0, x_test / 255.0
+# Preprocess the data
+train_images = train_images.reshape((60000, 28, 28, 1))
+train_images = train_images.astype("float32") / 255
 
-# One-hot encode the labels
-y_train = to_categorical(y_train, 10)
-y_test = to_categorical(y_test, 10)
+test_images = test_images.reshape((10000, 28, 28, 1))
+test_images = test_images.astype("float32") / 255
+
+train_labels = to_categorical(train_labels)
+test_labels = to_categorical(test_labels)
+
 
 # Define a simple neural network architecture
 model = Sequential([
         layers.Conv2D(32, (3, 3), activation="relu", input_shape=(28, 28, 1)),
         layers.MaxPooling2D((2, 2)),
-        layers.Conv2D(64, (3, 3), activation="relu"),
+        layers.Dropout(0.25),
+        layers.Conv2D(64, (3, 3), activation="relu", kernel_regularizer=regularizers.l2(0.001)),
         layers.MaxPooling2D((2, 2)),
-        layers.Conv2D(128, (3, 3), activation="relu"),
+        layers.Dropout(0.25),
+        layers.Conv2D(128, (3, 3), activation="relu", kernel_regularizer=regularizers.l2(0.001) ),
         layers.Flatten(),
-        layers.Dense(128, activation="relu"),
+        layers.Dense(64, activation="relu", kernel_regularizer=regularizers.l2(0.001)),
+        layers.Dropout(0.4),
         layers.Dense(10, activation="softmax")
 ])
 
@@ -33,11 +53,14 @@ model.compile(optimizer=Adam(learning_rate=0.001),
               loss='categorical_crossentropy',
               metrics=['accuracy'])
 
+train_generator = datagen.flow(train_images, train_labels, batch_size=64)
 # Train the model on the dataset
-model.fit(x_train, y_train, batch_size=32, epochs=10)
 
-# Evaluate the model on the test dataset
-test_loss, test_accuracy = model.evaluate(x_test, y_test)
-print(f'Test accuracy: {test_accuracy:.2f}')
+early_stopping = EarlyStopping(monitor="val_loss", patience=5, restore_best_weights=True)
+
+model.fit(train_generator, epochs=20, validation_data=(test_images, test_labels), callbacks=[early_stopping])
+
+test_loss, test_acc = model.evaluate(test_images, test_labels)
+print(f'Test accuracy: {test_acc:.2f}')
 
 model.save("mnist_digit_recognition_model.h5")

@@ -10,7 +10,7 @@ def preprocess_image(image_path):
     img = cv2.resize(img, (28, 28))
 
     # Invert the image (MNIST images are white digits on a black background)
-
+    img = 255 - img
     # Normalize the pixel values to the range [0, 1]
     img = img / 255.0
 
