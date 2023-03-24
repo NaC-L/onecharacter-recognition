@@ -1,1 +1,1 @@
-my first ai using pytorch
+mnist number recognition ai
