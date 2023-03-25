@@ -11,6 +11,7 @@ def preprocess_image(image_path):
 
     # Invert the image (MNIST images are white digits on a black background)
     img = 255 - img
+
     # Normalize the pixel values to the range [0, 1]
     img = img / 255.0
 
@@ -19,7 +20,7 @@ def preprocess_image(image_path):
 
     return img
 
-def predict_digit(image_path, model):
+def predict_token(image_path, model):
     # Preprocess the input image
     img = preprocess_image(image_path)
     
@@ -27,10 +28,24 @@ def predict_digit(image_path, model):
     prediction = model.predict(img)
 
     # Get the digit with the highest probability
-    #print(prediction)
     digit = np.argmax(prediction)
 
     return digit
+
+def token_to_char(token):
+    print(f"token is: {token}")
+    ival = 97
+    remval = 36
+    if token < 10:
+        return token
+
+    if token < 36:
+        ival = 65
+        remval = 10
+
+    token = token - remval
+
+    return chr(ival+token)
 
 # Load the saved model
 model = load_model('mnist_digit_recognition_model.h5')
@@ -41,7 +56,9 @@ image_path = 'image.jpg'
 
 
 # Predict the digit using the model
-predicted_digit = predict_digit(image_path, model)
+predicted_digit = predict_token(image_path, model)
 
 
-print(f'The predicted digit is: {predicted_digit}')
+predicted_val = token_to_char(predicted_digit)
+
+print(f'The predicted digit is: {predicted_val}')

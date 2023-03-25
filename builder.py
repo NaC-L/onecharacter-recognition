@@ -4,6 +4,7 @@ from tensorflow.keras.models import Sequential
 from tensorflow.keras import layers
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.datasets import mnist
+from extra_keras_datasets import emnist
 from tensorflow.keras.utils import to_categorical
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from tensorflow.keras.callbacks import EarlyStopping
@@ -20,13 +21,13 @@ datagen = ImageDataGenerator(
 )
 
 # Load the MNIST dataset
-(train_images, train_labels), (test_images, test_labels) = mnist.load_data()
+(train_images, train_labels), (test_images, test_labels) = emnist.load_data(type='byclass')
 
 # Preprocess the data
-train_images = train_images.reshape((60000, 28, 28, 1))
+train_images = train_images.reshape((train_images.shape[0], 28, 28, 1))
 train_images = train_images.astype("float32") / 255
 
-test_images = test_images.reshape((10000, 28, 28, 1))
+test_images = test_images.reshape((test_images.shape[0], 28, 28, 1))
 test_images = test_images.astype("float32") / 255
 
 train_labels = to_categorical(train_labels)
@@ -45,8 +46,8 @@ model = Sequential([
         layers.Flatten(),
         layers.Dense(1024, activation="relu", kernel_regularizer=regularizers.l2(0.001)),
         layers.Dense(512, activation="relu", kernel_regularizer=regularizers.l2(0.001)),
-        layers.Dropout(0.4),
-        layers.Dense(10, activation="softmax")
+        layers.Dropout(0.5),
+        layers.Dense(62, activation="softmax")
 ])
 
 # Compile the model
@@ -59,7 +60,7 @@ train_generator = datagen.flow(train_images, train_labels, batch_size=64)
 
 early_stopping = EarlyStopping(monitor="val_loss", patience=5, restore_best_weights=True)
 
-model.fit(train_generator, epochs=20, validation_data=(test_images, test_labels), callbacks=[early_stopping])
+model.fit(train_generator, epochs=10, validation_data=(test_images, test_labels), callbacks=[early_stopping])
 
 test_loss, test_acc = model.evaluate(test_images, test_labels)
 print(f'Test accuracy: {test_acc:.2f}')
