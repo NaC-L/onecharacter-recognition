@@ -1,4 +1,5 @@
-emnist number recognition ai, 83% test accuracy
+emnist number recognition ai
+
 
 Dataset Link : https://www.nist.gov/node/1298471/emnist-dataset
 
